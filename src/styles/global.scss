@@ -1,0 +1,53 @@
+@use './variables' as *;
+
+#root {
+  min-height: 100vh;
+  background: $hangplan-bg;
+}
+
+.hangplan-layout {
+  max-width: $hangplan-content-max;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.hangplan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.hangplan-brand-link {
+  color: $hangplan-brand;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hangplan-section {
+  margin-top: 1.5rem;
+}
+
+.hangplan-tile {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: $hangplan-radius;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.hangplan-muted {
+  color: #6f6f6f;
+  font-size: 0.875rem;
+}
+
+ul.hangplan-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  li {
+    margin-bottom: 0.25rem;
+  }
+}
