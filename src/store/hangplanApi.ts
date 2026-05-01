@@ -16,7 +16,7 @@ export const hangplanApi = createApi({
       return headers
     },
   }),
-  tagTypes: ['Event', 'EventExpenses', 'EventSummary', 'User'],
+  tagTypes: ['Event', 'EventExpenses', 'EventSummary', 'User', 'MyEvents'],
   endpoints: (build) => ({
     signup: build.mutation<
       { token: string; user: AuthUser },
@@ -39,6 +39,15 @@ export const hangplanApi = createApi({
       { title: string; maxParticipants: number }
     >({
       query: (body) => ({ url: '/events', method: 'POST', body }),
+      invalidatesTags: ['MyEvents'],
+    }),
+    getMyEvents: build.query<MyEventsOut, void>({
+      query: () => '/events/self',
+      providesTags: ['MyEvents'],
+    }),
+    declineEvent: build.mutation<void, string>({
+      query: (id) => ({ url: `/events/${id}/decline`, method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => [{ type: 'Event', id }, 'MyEvents'],
     }),
     getEvent: build.query<EventOut, string>({
       query: (id) => `/events/${id}`,
@@ -46,7 +55,7 @@ export const hangplanApi = createApi({
     }),
     joinEvent: build.mutation<void, string>({
       query: (id) => ({ url: `/events/${id}/join`, method: 'POST' }),
-      invalidatesTags: (_r, _e, id) => [{ type: 'Event', id }],
+      invalidatesTags: (_r, _e, id) => [{ type: 'Event', id }, 'MyEvents'],
     }),
     addExpense: build.mutation<
       void,
@@ -112,11 +121,26 @@ export type SummaryOut = {
   }[]
 }
 
+export type MyEventSummary = {
+  id: string
+  title: string
+  status: 'OPEN' | 'CLOSED'
+  createdAt: string
+  createdByName: string
+  createdByMe: boolean
+}
+
+export type MyEventsOut = {
+  events: MyEventSummary[]
+}
+
 export const {
   useSignupMutation,
   useLoginMutation,
   useGetMeQuery,
   useCreateEventMutation,
+  useGetMyEventsQuery,
+  useDeclineEventMutation,
   useGetEventQuery,
   useJoinEventMutation,
   useAddExpenseMutation,

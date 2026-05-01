@@ -9,6 +9,7 @@ import {
   useGetSummaryQuery,
   useJoinEventMutation,
   useAddExpenseMutation,
+  useDeclineEventMutation,
 } from '../store/hangplanApi'
 import { useAppSelector } from '../store/hooks'
 
@@ -34,6 +35,7 @@ export function EventPage() {
   const { data: expenses = [] } = useGetExpensesQuery(rawId, { skip: !rawId, ...poll })
   const { data: summary } = useGetSummaryQuery(rawId, { skip: !rawId, ...poll })
   const [join, joinState] = useJoinEventMutation()
+  const [decline, declineState] = useDeclineEventMutation()
   const [addEx, exState] = useAddExpenseMutation()
   const [msg, setMsg] = useState<string | null>(null)
 
@@ -42,10 +44,17 @@ export function EventPage() {
     defaultValues: { amount: '', description: '' },
   })
 
-  const alreadyJoined = useMemo(() => {
+  const hasAcceptedMembership = useMemo(() => {
     if (!me || !ev) return false
-    return ev.participants.some((p) => p.userId === me.id)
+    return ev.participants.some((p) => p.userId === me.id && p.status === 'ACCEPTED')
   }, [me, ev])
+
+  const myParticipant = useMemo(() => {
+    if (!me || !ev) return undefined
+    return ev.participants.find((p) => p.userId === me.id)
+  }, [me, ev])
+
+  const isCreator = !!(me && ev && ev.createdById === me.id)
 
   const isClosed = ev?.status === 'CLOSED'
 
@@ -55,6 +64,15 @@ export function EventPage() {
       await join(rawId).unwrap()
     } catch {
       setMsg('Could not join. The event may be full or closed.')
+    }
+  }
+
+  const onDecline = async () => {
+    setMsg(null)
+    try {
+      await decline(rawId).unwrap()
+    } catch {
+      setMsg('Could not save your choice. Try again.')
     }
   }
 
@@ -119,16 +137,37 @@ export function EventPage() {
       {/* Join */}
       <div className="hp-section">
         <h2 className="hp-section-title">Join</h2>
-        {alreadyJoined ? (
+        {hasAcceptedMembership ? (
           <p className="hp-muted">You are already in this event.</p>
+        ) : isCreator ? (
+          <p className="hp-muted">You created this event — you are already included as a participant.</p>
         ) : (
-          <button
-            className="hp-btn hp-btn--primary"
-            onClick={onJoin}
-            disabled={isClosed || joinState.isLoading}
-          >
-            {joinState.isLoading ? <span className="hp-spinner" /> : isClosed ? 'Event closed' : 'Join event'}
-          </button>
+          <>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+              <button
+                className="hp-btn hp-btn--primary"
+                onClick={onJoin}
+                disabled={isClosed || joinState.isLoading}
+              >
+                {joinState.isLoading ? <span className="hp-spinner" /> : isClosed ? 'Event closed' : 'Join event'}
+              </button>
+              {!isClosed && myParticipant?.status !== 'DECLINED' && (
+                <button
+                  type="button"
+                  className="hp-btn hp-btn--secondary"
+                  onClick={onDecline}
+                  disabled={declineState.isLoading}
+                >
+                  {declineState.isLoading ? <span className="hp-spinner hp-spinner--dark" /> : 'Pass on this event'}
+                </button>
+              )}
+            </div>
+            {myParticipant?.status === 'DECLINED' && (
+              <p className="hp-muted" style={{ marginTop: 14 }}>
+                You passed on this event. You can still join if there is room.
+              </p>
+            )}
+          </>
         )}
       </div>
 
@@ -164,7 +203,7 @@ export function EventPage() {
       </div>
 
       {/* Add expense form */}
-      {alreadyJoined && !isClosed && (
+      {hasAcceptedMembership && !isClosed && (
         <div className="hp-section">
           <h2 className="hp-section-title">Add expense</h2>
           <div className="hp-card" style={{ maxWidth: 480 }}>

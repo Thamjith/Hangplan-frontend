@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
+import { MyEventsPanel } from '../components/MyEventsPanel'
 import { useCreateEventMutation } from '../store/hangplanApi'
 
 const schema = z.object({
@@ -37,6 +38,7 @@ export function CreateEventPage() {
 
   return (
     <div>
+      <MyEventsPanel />
       <h1 className="hp-page-title">Create an event</h1>
       <div className="hp-card" style={{ maxWidth: 480 }}>
         <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

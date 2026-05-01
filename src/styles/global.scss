@@ -270,3 +270,63 @@
   border-color: oklch(22% 0.025 265 / 0.15);
   border-top-color: var(--primary);
 }
+
+// ── My events dashboard ─────────────────────────────────────────────────────────
+
+.hp-events-section__empty {
+  font-size: 14px;
+  padding: 12px 0 4px;
+}
+
+.hp-events-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hp-events-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  &__main {
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-base);
+    text-decoration: none;
+    word-break: break-word;
+
+    &:hover {
+      color: var(--primary);
+    }
+  }
+
+  &__meta {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.45;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+  }
+}
+
+.hp-events-panel--error .hp-inline-error {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
