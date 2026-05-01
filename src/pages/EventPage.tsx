@@ -29,6 +29,11 @@ const expenseSchema = z.object({
 type ExpenseFormIn = z.input<typeof expenseSchema>
 type ExpenseForm = z.infer<typeof expenseSchema>
 
+/** Paid-tier WebSocket/STOMP reached “subscribed and listening”, vs failed or still connecting */
+type RealtimeWsStatus = 'connecting' | 'live' | 'unavailable'
+
+const REALTIME_CONNECT_MS = 15000
+
 export function EventPage() {
   const { id: rawId = '' } = useParams()
   const me = useAppSelector((s) => s.auth.user)
@@ -47,6 +52,8 @@ export function EventPage() {
   const [decline, declineState] = useDeclineEventMutation()
   const [addEx, exState] = useAddExpenseMutation()
   const [msg, setMsg] = useState<string | null>(null)
+  const [copyLinkFeedback, setCopyLinkFeedback] = useState<'idle' | 'copied' | 'error'>('idle')
+  const [realtimeWsStatus, setRealtimeWsStatus] = useState<RealtimeWsStatus>('connecting')
 
   const form = useForm<ExpenseFormIn, unknown, ExpenseForm>({
     resolver: zodResolver(expenseSchema),
@@ -66,6 +73,35 @@ export function EventPage() {
   const isCreator = !!(me && ev && ev.createdById === me.id)
 
   const isClosed = ev?.status === 'CLOSED'
+
+  useEffect(() => {
+    setCopyLinkFeedback('idle')
+  }, [rawId])
+
+  const copyShareLink = useCallback(async () => {
+    if (typeof window === 'undefined') return
+    const url = window.location.href
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+      } else {
+        const ta = document.createElement('textarea')
+        ta.value = url
+        ta.style.position = 'fixed'
+        ta.style.left = '-9999px'
+        document.body.appendChild(ta)
+        ta.focus()
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+      }
+      setCopyLinkFeedback('copied')
+      window.setTimeout(() => setCopyLinkFeedback('idle'), 2000)
+    } catch {
+      setCopyLinkFeedback('error')
+      window.setTimeout(() => setCopyLinkFeedback('idle'), 2500)
+    }
+  }, [])
   
   const onRefresh = useCallback(async () => {
     setMsg(null)
@@ -81,6 +117,19 @@ export function EventPage() {
       return
     }
 
+    let cancelled = false
+    setRealtimeWsStatus('connecting')
+
+    const failTimer = window.setTimeout(() => {
+      if (!cancelled) {
+        setRealtimeWsStatus((prev) => (prev === 'live' ? 'live' : 'unavailable'))
+      }
+    }, REALTIME_CONNECT_MS)
+
+    const clearFailTimer = () => {
+      window.clearTimeout(failTimer)
+    }
+
     const wsBase = apiBaseUrl.replace(/\/$/, '')
     const client = new Client({
       webSocketFactory: () => new SockJS(`${wsBase}/ws`),
@@ -90,14 +139,35 @@ export function EventPage() {
       reconnectDelay: 5000,
     })
 
+    const markUnavailable = () => {
+      if (!cancelled) {
+        clearFailTimer()
+        setRealtimeWsStatus('unavailable')
+      }
+    }
+
     client.onConnect = () => {
+      if (cancelled) return
+      clearFailTimer()
       client.subscribe(`/topic/events/${rawId}`, () => {
         void onRefresh()
       })
+      setRealtimeWsStatus('live')
+    }
+
+    client.onStompError = () => {
+      markUnavailable()
+    }
+
+    client.onWebSocketError = () => {
+      markUnavailable()
     }
 
     client.activate()
+
     return () => {
+      cancelled = true
+      clearFailTimer()
       void client.deactivate()
     }
   }, [rawId, realtimeEnabled, authToken, onRefresh])
@@ -165,12 +235,44 @@ export function EventPage() {
         </span>{' '}
         · Created by {ev.createdByName}
       </p>
-      <p className="hp-muted" style={{ marginBottom: 28, wordBreak: 'break-all' }}>
-        Share link:{' '}
-        <code style={{ fontSize: 13, background: 'var(--bg)', padding: '2px 6px', borderRadius: 4, border: '1px solid var(--border)' }}>
+      <div
+        className="hp-muted"
+        style={{
+          marginBottom: 28,
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '10px 12px',
+        }}
+      >
+        <span style={{ flexShrink: 0 }}>Share link:</span>
+        <code
+          style={{
+            flex: '1 1 180px',
+            minWidth: 0,
+            fontSize: 13,
+            wordBreak: 'break-all',
+            background: 'var(--bg)',
+            padding: '6px 10px',
+            borderRadius: 4,
+            border: '1px solid var(--border)',
+          }}
+        >
           {typeof window !== 'undefined' ? window.location.href : ''}
         </code>
-      </p>
+        <button
+          type="button"
+          className="hp-btn hp-btn--secondary hp-btn--sm"
+          style={{ flexShrink: 0 }}
+          onClick={() => void copyShareLink()}
+        >
+          {copyLinkFeedback === 'copied'
+            ? 'Copied!'
+            : copyLinkFeedback === 'error'
+              ? 'Could not copy'
+              : 'Copy link'}
+        </button>
+      </div>
 
       {msg && (
         <div className="hp-inline-error" style={{ marginBottom: 20 }}>
@@ -181,9 +283,13 @@ export function EventPage() {
       <div className="hp-section" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <p className="hp-muted" style={{ margin: 0 }}>
-            {realtimeEnabled
-              ? 'Real-time updates are enabled for your account.'
-              : 'Real-time updates are available for premium users.'}
+            {!realtimeEnabled
+              ? 'Real-time updates are available for premium users.'
+              : realtimeWsStatus === 'live'
+                ? 'Real-time updates are enabled for your account.'
+                : realtimeWsStatus === 'connecting'
+                  ? 'Connecting to real-time updates…'
+                  : 'Real-time updates could not connect. Refresh the page to try again.'}
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
@@ -193,6 +299,11 @@ export function EventPage() {
             >
               Refresh
             </button>
+            {realtimeEnabled && realtimeWsStatus === 'unavailable' && (
+              <button type="button" className="hp-btn hp-btn--primary hp-btn--sm" onClick={() => window.location.reload()}>
+                Reload page
+              </button>
+            )}
             {!realtimeEnabled && (
               <button type="button" className="hp-btn hp-btn--secondary hp-btn--sm" disabled>
                 Upgrade
