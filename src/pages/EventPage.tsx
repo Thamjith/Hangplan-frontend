@@ -32,7 +32,8 @@ export function EventPage() {
   const { id: rawId = '' } = useParams()
   const me = useAppSelector((s) => s.auth.user)
   const authToken = useAppSelector((s) => s.auth.token)
-  const isPremium = !!me?.isPremium
+  // Backend historically exposed this as JSON key `premium` (Jackson + `boolean isPremium`); accept both.
+  const isPremium = !!(me?.isPremium ?? (me as { premium?: boolean } | null)?.premium)
 
   const {
     data: ev,
