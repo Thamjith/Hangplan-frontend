@@ -31,6 +31,7 @@ type ExpenseForm = z.infer<typeof expenseSchema>
 export function EventPage() {
   const { id: rawId = '' } = useParams()
   const me = useAppSelector((s) => s.auth.user)
+  const authToken = useAppSelector((s) => s.auth.token)
   const isPremium = !!me?.isPremium
 
   const {
@@ -75,7 +76,7 @@ export function EventPage() {
   }, [refetchEvent, refetchExpenses, refetchSummary])
 
   useEffect(() => {
-    if (!rawId || !isPremium) {
+    if (!rawId || !isPremium || !authToken) {
       return
     }
 
@@ -83,7 +84,7 @@ export function EventPage() {
     const client = new Client({
       webSocketFactory: () => new SockJS(`${wsBase}/ws`),
       connectHeaders: {
-        Authorization: `Bearer ${localStorage.getItem('hangplan_token') ?? ''}`,
+        Authorization: `Bearer ${authToken}`,
       },
       reconnectDelay: 5000,
     })
@@ -96,9 +97,9 @@ export function EventPage() {
 
     client.activate()
     return () => {
-      client.deactivate()
+      void client.deactivate()
     }
-  }, [rawId, isPremium, onRefresh])
+  }, [rawId, isPremium, authToken, onRefresh])
 
   const onJoin = async () => {
     setMsg(null)
