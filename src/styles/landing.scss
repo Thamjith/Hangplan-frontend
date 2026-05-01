@@ -1,0 +1,770 @@
+@use 'variables' as *;
+
+// ── Navbar ────────────────────────────────────────────────────────────────────
+
+.lp-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 clamp(20px, 5vw, 80px);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background 0.3s ease, backdrop-filter 0.3s ease, border-color 0.3s ease;
+
+  &.is-scrolled {
+    background: oklch(99% 0.008 75 / 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom-color: var(--border);
+  }
+
+  &__inner {
+    max-width: $content-max;
+    margin: 0 auto;
+    height: $nav-height;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+
+    span {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--text-base);
+      letter-spacing: -0.02em;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+// ── Shared landing buttons ────────────────────────────────────────────────────
+
+.lp-btn-ghost {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
+
+  &:hover { color: var(--text-base); }
+}
+
+.lp-btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &--nav {
+    font-size: 15px;
+    padding: 9px 20px;
+    box-shadow: 0 2px 10px oklch(52% 0.18 260 / 0.27);
+  }
+
+  &--hero {
+    font-size: 16px;
+    padding: 14px 30px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px oklch(52% 0.18 260 / 0.25);
+
+    &:hover {
+      box-shadow: 0 8px 28px oklch(52% 0.18 260 / 0.31);
+      transform: translateY(-2px);
+    }
+  }
+
+  &:hover {
+    background: var(--primary-dk);
+    transform: translateY(-1px);
+  }
+}
+
+.lp-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  color: var(--text-base);
+  border: 1.5px solid var(--border);
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 14px 28px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+// ── Section typography ────────────────────────────────────────────────────────
+
+.lp-section-title {
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-base);
+  margin-bottom: 14px;
+}
+
+.lp-section-desc {
+  font-size: 17px;
+  color: var(--text-muted);
+  max-width: 440px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────────────
+
+.lp-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 100px clamp(20px, 5vw, 80px) 80px;
+  background: linear-gradient(
+    155deg,
+    oklch(94% 0.06 265) 0%,
+    oklch(97% 0.012 75) 55%,
+    oklch(95% 0.07 28) 100%
+  );
+
+  &__blob {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    max-width: $content-max;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 32px;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-lt);
+    color: var(--primary);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    &__dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+  }
+
+  &__title {
+    font-size: clamp(40px, 7vw, 78px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: var(--text-base);
+    max-width: 820px;
+    text-wrap: balance;
+
+    .highlight { color: var(--primary); }
+  }
+
+  &__desc {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--text-muted);
+    max-width: 520px;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  &__ctas {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+// ── Hero event preview card ───────────────────────────────────────────────────
+
+.lp-event-card {
+  margin-top: 20px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  box-shadow:
+    0 8px 48px oklch(22% 0.025 265 / 0.08),
+    0 1px 0 oklch(22% 0.025 265 / 0.06);
+  border: 1px solid var(--border);
+  max-width: 480px;
+  width: 100%;
+  text-align: left;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-base);
+  }
+
+  &__meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  &__going {
+    background: var(--primary-lt);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__people {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  &__person {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    position: relative;
+    border: 2.5px solid white;
+    flex-shrink: 0;
+
+    &--pending {
+      border-color: var(--border);
+      opacity: 0.5;
+    }
+
+    &__check {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 13px;
+      height: 13px;
+      background: oklch(60% 0.18 150);
+      border-radius: 50%;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  &__person-name {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  &__split {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &__label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    &__amounts {
+      display: flex;
+      gap: 16px;
+    }
+
+    &__amount {
+      text-align: right;
+
+      strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-base);
+      }
+
+      span {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      &--primary strong { color: var(--primary); }
+    }
+  }
+}
+
+// ── Features ──────────────────────────────────────────────────────────────────
+
+.lp-features {
+  padding: clamp(70px, 10vw, 110px) clamp(20px, 5vw, 80px);
+  background: var(--bg);
+
+  &__container {
+    max-width: $content-max;
+    margin: 0 auto;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: clamp(40px, 6vw, 72px);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+}
+
+.lp-feature-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: clamp(24px, 3vw, 34px);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 2px 12px oklch(22% 0.025 265 / 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  cursor: default;
+
+  &:hover {
+    box-shadow: 0 12px 40px oklch(22% 0.025 265 / 0.10);
+    transform: translateY(-4px);
+  }
+
+  &__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-base);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  &__desc {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+}
+
+// ── How It Works ──────────────────────────────────────────────────────────────
+
+.lp-how {
+  padding: clamp(70px, 10vw, 110px) clamp(20px, 5vw, 80px);
+  background: linear-gradient(180deg, var(--bg) 0%, var(--primary-lt) 100%);
+
+  &__container {
+    max-width: $content-max;
+    margin: 0 auto;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: clamp(40px, 6vw, 72px);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+}
+
+.lp-step-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(24px, 3vw, 34px);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 2px 12px oklch(22% 0.025 265 / 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    box-shadow: 0 12px 40px oklch(22% 0.025 265 / 0.10);
+    transform: translateY(-4px);
+  }
+
+  &__num {
+    font-size: 44px;
+    font-weight: 800;
+    color: var(--primary);
+    opacity: 0.18;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  &__title {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text-base);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  &__desc {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+}
+
+// ── Auth Section ──────────────────────────────────────────────────────────────
+
+.lp-auth {
+  padding: clamp(70px, 10vw, 110px) clamp(20px, 5vw, 80px);
+  background: var(--bg);
+
+  &__card {
+    max-width: 460px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: clamp(32px, 5vw, 48px);
+    box-shadow:
+      0 4px 6px oklch(22% 0.025 265 / 0.04),
+      0 16px 48px oklch(22% 0.025 265 / 0.10),
+      0 0 0 1px oklch(22% 0.025 265 / 0.06);
+    border: 1px solid var(--border);
+  }
+
+  &__head {
+    text-align: center;
+    margin-bottom: 28px;
+
+    &__brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      text-decoration: none;
+
+      span {
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--text-base);
+      }
+    }
+
+    &__title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-base);
+      margin-bottom: 6px;
+    }
+
+    &__sub {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+  }
+
+  &__google {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-base);
+    margin-bottom: 20px;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:hover {
+      border-color: var(--primary);
+      background: var(--primary-lt);
+    }
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    &__line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-base);
+    }
+  }
+
+  &__input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-base);
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color 0.15s;
+
+    &:focus { border-color: var(--primary); }
+    &.is-error { border-color: oklch(60% 0.20 25); }
+    &::placeholder { color: oklch(68% 0.015 265); }
+    &--pw { padding-right: 44px; }
+  }
+
+  &__pw-wrap {
+    position: relative;
+
+    button {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      transition: color 0.15s;
+
+      &:hover { color: var(--text-base); }
+    }
+  }
+
+  &__field-error {
+    font-size: 12px;
+    color: oklch(55% 0.20 25);
+  }
+
+  &__forgot {
+    text-align: right;
+    margin-top: -8px;
+
+    a {
+      font-size: 13px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  &__error-banner {
+    background: oklch(96% 0.05 25);
+    border: 1px solid oklch(82% 0.10 25);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    color: oklch(42% 0.18 25);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  &__submit {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 600;
+    padding: 13px 20px;
+    border-radius: var(--radius-sm);
+    margin-top: 4px;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 3px 16px oklch(52% 0.18 260 / 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &:hover:not(:disabled) {
+      background: var(--primary-dk);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px oklch(52% 0.18 260 / 0.30);
+    }
+
+    &:disabled {
+      opacity: 0.8;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid oklch(100% 0 0 / 0.27);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+  }
+
+  &__switch {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 22px;
+
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0;
+
+      &:hover { text-decoration: underline; }
+    }
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+.lp-footer {
+  border-top: 1px solid var(--border);
+  padding: 32px clamp(20px, 5vw, 80px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-base);
+  }
+
+  &__copy {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  &__links {
+    display: flex;
+    gap: 20px;
+
+    a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+
+      &:hover { color: var(--primary); }
+    }
+  }
+}

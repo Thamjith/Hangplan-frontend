@@ -1,53 +1,272 @@
-@use './variables' as *;
+@use 'variables' as *;
 
-#root {
+// ── App shell ────────────────────────────────────────────────────────────────
+
+.app-layout {
   min-height: 100vh;
-  background: $hangplan-bg;
+  background: var(--bg);
 }
 
-.hangplan-layout {
-  max-width: $hangplan-content-max;
-  margin: 0 auto;
-  padding: 2rem 1rem 4rem;
-}
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: oklch(99% 0.008 75 / 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 clamp(16px, 4vw, 48px);
 
-.hangplan-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.hangplan-brand-link {
-  color: $hangplan-brand;
-  font-size: 1.25rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.hangplan-section {
-  margin-top: 1.5rem;
-}
-
-.hangplan-tile {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: $hangplan-radius;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.hangplan-muted {
-  color: #6f6f6f;
-  font-size: 0.875rem;
-}
-
-ul.hangplan-list {
-  margin: 0;
-  padding-left: 1.25rem;
-  li {
-    margin-bottom: 0.25rem;
+  &__inner {
+    max-width: $content-max;
+    margin: 0 auto;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
   }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-base);
+    letter-spacing: -0.02em;
+    transition: color 0.15s;
+
+    &:hover { color: var(--primary); }
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__user-name {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+}
+
+.app-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px clamp(16px, 4vw, 48px) 80px;
+}
+
+// ── Reusable components for app pages ────────────────────────────────────────
+
+.hp-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 3vw, 32px);
+  box-shadow: 0 2px 12px oklch(22% 0.025 265 / 0.05);
+}
+
+.hp-page-title {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  color: var(--text-base);
+  letter-spacing: -0.025em;
+  margin-bottom: 24px;
+}
+
+.hp-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-base);
+  letter-spacing: -0.015em;
+  margin-bottom: 16px;
+}
+
+.hp-section {
+  margin-top: 32px;
+}
+
+.hp-muted {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+// ── Form elements ─────────────────────────────────────────────────────────────
+
+.hp-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-base);
+  }
+}
+
+.hp-input {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text-base);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: var(--primary); }
+
+  &.is-error { border-color: oklch(60% 0.20 25); }
+
+  &::placeholder { color: oklch(68% 0.015 265); }
+}
+
+.hp-field-error {
+  font-size: 12px;
+  color: oklch(55% 0.20 25);
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+
+.hp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    background: var(--primary);
+    color: white;
+    padding: 11px 24px;
+    font-size: 15px;
+    box-shadow: 0 2px 12px oklch(52% 0.18 260 / 0.25);
+
+    &:hover:not(:disabled) {
+      background: var(--primary-dk);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 18px oklch(52% 0.18 260 / 0.30);
+    }
+  }
+
+  &--secondary {
+    background: var(--surface);
+    color: var(--text-base);
+    border: 1.5px solid var(--border);
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 500;
+
+    &:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+  }
+
+  &--sm {
+    padding: 7px 16px;
+    font-size: 13px;
+  }
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+
+.hp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+
+  &--primary {
+    background: var(--primary-lt);
+    color: var(--primary);
+  }
+
+  &--success {
+    background: oklch(94% 0.06 150);
+    color: oklch(42% 0.18 150);
+  }
+
+  &--muted {
+    background: var(--bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.hp-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1.5px solid var(--border);
+  }
+
+  td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--text-base);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: var(--bg); }
+}
+
+// ── Inline error/notification ─────────────────────────────────────────────────
+
+.hp-inline-error {
+  background: oklch(96% 0.05 25);
+  border: 1px solid oklch(82% 0.10 25);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 14px;
+  color: oklch(42% 0.18 25);
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+
+.hp-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid oklch(100% 0 0 / 0.27);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.hp-spinner--dark {
+  border-color: oklch(22% 0.025 265 / 0.15);
+  border-top-color: var(--primary);
 }

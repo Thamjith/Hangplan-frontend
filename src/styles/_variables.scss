@@ -1,4 +1,20 @@
-$hangplan-brand: #0f62fe;
-$hangplan-bg: #f4f4f4;
-$hangplan-radius: 4px;
-$hangplan-content-max: 64rem;
+:root {
+  --primary:       oklch(52% 0.18 260);
+  --primary-dk:    oklch(42% 0.18 260);
+  --primary-lt:    oklch(94% 0.06 260);
+  --secondary:     oklch(66% 0.14 290);
+  --secondary-lt:  oklch(94% 0.06 290);
+  --accent:        oklch(67% 0.16 30);
+  --accent-lt:     oklch(94% 0.07 30);
+  --bg:            oklch(97% 0.012 75);
+  --surface:       oklch(99.5% 0.008 75);
+  --border:        oklch(90% 0.015 265);
+  --text-base:     oklch(22% 0.025 265);
+  --text-muted:    oklch(48% 0.025 265);
+  --radius:        16px;
+  --radius-lg:     24px;
+  --radius-sm:     9.6px;
+}
+
+$content-max: 1120px;
+$nav-height: 66px;

@@ -7,7 +7,7 @@ export function ProtectedRoute({ children }: Props) {
   const token = useAppSelector((s) => s.auth.token)
   const loc = useLocation()
   if (!token) {
-    return <Navigate to="/auth" replace state={{ from: loc }} />
+    return <Navigate to="/" replace state={{ from: loc }} />
   }
   return <>{children}</>
 }
