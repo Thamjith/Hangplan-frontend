@@ -7,7 +7,9 @@ export type AuthUser = {
   name: string
   email: string
   provider: 'LOCAL' | 'GOOGLE'
-  isPremium: boolean
+  /** Backend plan name, e.g. FREE, PAID_1Y */
+  subscriptionPlan: string
+  subscriptionEnd: string | null
 }
 
 type AuthState = {

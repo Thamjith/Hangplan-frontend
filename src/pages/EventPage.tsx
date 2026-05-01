@@ -15,6 +15,7 @@ import {
   useDeclineEventMutation,
 } from '../store/hangplanApi'
 import { useAppSelector } from '../store/hooks'
+import { isPaidUser } from '../subscription'
 
 const expenseSchema = z.object({
   amount: z
@@ -32,8 +33,7 @@ export function EventPage() {
   const { id: rawId = '' } = useParams()
   const me = useAppSelector((s) => s.auth.user)
   const authToken = useAppSelector((s) => s.auth.token)
-  // Backend historically exposed this as JSON key `premium` (Jackson + `boolean isPremium`); accept both.
-  const isPremium = !!(me?.isPremium ?? (me as { premium?: boolean } | null)?.premium)
+  const realtimeEnabled = isPaidUser(me)
 
   const {
     data: ev,
@@ -77,7 +77,7 @@ export function EventPage() {
   }, [refetchEvent, refetchExpenses, refetchSummary])
 
   useEffect(() => {
-    if (!rawId || !isPremium || !authToken) {
+    if (!rawId || !realtimeEnabled || !authToken) {
       return
     }
 
@@ -100,7 +100,7 @@ export function EventPage() {
     return () => {
       void client.deactivate()
     }
-  }, [rawId, isPremium, authToken, onRefresh])
+  }, [rawId, realtimeEnabled, authToken, onRefresh])
 
   const onJoin = async () => {
     setMsg(null)
@@ -181,19 +181,19 @@ export function EventPage() {
       <div className="hp-section" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <p className="hp-muted" style={{ margin: 0 }}>
-            {isPremium
-              ? 'Real-time updates are enabled for your premium account.'
+            {realtimeEnabled
+              ? 'Real-time updates are enabled for your account.'
               : 'Real-time updates are available for premium users.'}
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
-              className={`hp-btn hp-btn--sm ${isPremium ? 'hp-btn--secondary' : 'hp-btn--primary'}`}
+              className={`hp-btn hp-btn--sm ${realtimeEnabled ? 'hp-btn--secondary' : 'hp-btn--primary'}`}
               onClick={() => void onRefresh()}
             >
               Refresh
             </button>
-            {!isPremium && (
+            {!realtimeEnabled && (
               <button type="button" className="hp-btn hp-btn--secondary hp-btn--sm" disabled>
                 Upgrade
               </button>

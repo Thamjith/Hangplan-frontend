@@ -38,28 +38,30 @@ npm run lint
 npm run preview
 ```
 
-## Real-time Updates & Subscription Model
+## Real-time updates & subscription model
 
-HangPlan frontend has two update modes:
+The event page supports two update modes:
 
-- Free users (`isPremium = false`) use manual refresh in the event page.
-- Premium users (`isPremium = true`) use WebSocket subscriptions for instant updates.
+- **Free (`FREE` plan):** WebSocket is **not** opened; use **Refresh** to reload event data, expenses, and summary.
+- **Paid (active subscription):** connects to **`/ws`**, subscribes to **`/topic/events/{eventId}`**, and refetches when messages arrive—while **`subscriptionEnd`** from **`GET /auth/me`** is still in the future.
 
-### How it works
+### API shape
 
-- Event page subscribes to `/topic/events/{eventId}` through backend `/ws` when user is premium.
-- On real-time messages, the page refetches event details, expenses, and summary.
-- Free users do not open a WebSocket connection and use the Refresh button.
+Authenticated user payloads include **`subscriptionPlan`** (plan name string, e.g. **`FREE`**, **`PAID_1Y`**) and **`subscriptionEnd`** (ISO timestamp or **`null`** for free/no active window).
+
+### Client helper
+
+Use **`isPaidUser`** from **`src/subscription.ts`** so realtime eligibility matches backend rules (**non-**`**FREE`** plan **and** **`subscriptionEnd` > now**).
 
 ### Where logic lives
 
-- User subscription flag in auth store: `src/store/authSlice.ts`
-- API and base URL source: `src/store/hangplanApi.ts`
-- Conditional real-time/manual refresh behavior: `src/pages/EventPage.tsx`
+- Auth user fields: **`src/store/authSlice.ts`**
+- API hooks and types: **`src/store/hangplanApi.ts`**
+- **`isPaidUser`**: **`src/subscription.ts`**
+- WebSocket vs manual refresh: **`src/pages/EventPage.tsx`**
 
-### Testing free vs premium
+### Testing free vs paid realtime
 
-1. Login with a free user and open an event page.
-2. Confirm updates only appear after clicking Refresh.
-3. Login with a premium user and open the same event.
-4. Trigger event changes in another session and confirm instant UI updates.
+1. Log in as a **`FREE`** user and open an event; confirm updates appear only after **Refresh**.
+2. Grant **`PAID_1Y`** with a future **`subscription_end`** in the database (see backend README), then log in again.
+3. Open the same event in two browsers; trigger changes in one and confirm instant updates in the other.
