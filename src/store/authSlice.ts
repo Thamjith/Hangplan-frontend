@@ -7,6 +7,7 @@ export type AuthUser = {
   name: string
   email: string
   provider: 'LOCAL' | 'GOOGLE'
+  isPremium: boolean
 }
 
 type AuthState = {

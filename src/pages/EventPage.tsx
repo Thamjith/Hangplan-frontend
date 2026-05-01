@@ -1,9 +1,12 @@
 import { useParams, Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client/dist/sockjs.min.js'
 import {
+  apiBaseUrl,
   useGetEventQuery,
   useGetExpensesQuery,
   useGetSummaryQuery,
@@ -12,8 +15,6 @@ import {
   useDeclineEventMutation,
 } from '../store/hangplanApi'
 import { useAppSelector } from '../store/hooks'
-
-const poll = { pollingInterval: 5000 } as const
 
 const expenseSchema = z.object({
   amount: z
@@ -30,10 +31,16 @@ type ExpenseForm = z.infer<typeof expenseSchema>
 export function EventPage() {
   const { id: rawId = '' } = useParams()
   const me = useAppSelector((s) => s.auth.user)
+  const isPremium = !!me?.isPremium
 
-  const { data: ev, error: evError, isLoading: evLoading } = useGetEventQuery(rawId, { skip: !rawId, ...poll })
-  const { data: expenses = [] } = useGetExpensesQuery(rawId, { skip: !rawId, ...poll })
-  const { data: summary } = useGetSummaryQuery(rawId, { skip: !rawId, ...poll })
+  const {
+    data: ev,
+    error: evError,
+    isLoading: evLoading,
+    refetch: refetchEvent,
+  } = useGetEventQuery(rawId, { skip: !rawId })
+  const { data: expenses = [], refetch: refetchExpenses } = useGetExpensesQuery(rawId, { skip: !rawId })
+  const { data: summary, refetch: refetchSummary } = useGetSummaryQuery(rawId, { skip: !rawId })
   const [join, joinState] = useJoinEventMutation()
   const [decline, declineState] = useDeclineEventMutation()
   const [addEx, exState] = useAddExpenseMutation()
@@ -57,6 +64,41 @@ export function EventPage() {
   const isCreator = !!(me && ev && ev.createdById === me.id)
 
   const isClosed = ev?.status === 'CLOSED'
+  
+  const onRefresh = useCallback(async () => {
+    setMsg(null)
+    try {
+      await Promise.all([refetchEvent(), refetchExpenses(), refetchSummary()])
+    } catch {
+      setMsg('Could not refresh right now. Please try again.')
+    }
+  }, [refetchEvent, refetchExpenses, refetchSummary])
+
+  useEffect(() => {
+    if (!rawId || !isPremium) {
+      return
+    }
+
+    const wsBase = apiBaseUrl.replace(/\/$/, '')
+    const client = new Client({
+      webSocketFactory: () => new SockJS(`${wsBase}/ws`),
+      connectHeaders: {
+        Authorization: `Bearer ${localStorage.getItem('hangplan_token') ?? ''}`,
+      },
+      reconnectDelay: 5000,
+    })
+
+    client.onConnect = () => {
+      client.subscribe(`/topic/events/${rawId}`, () => {
+        void onRefresh()
+      })
+    }
+
+    client.activate()
+    return () => {
+      client.deactivate()
+    }
+  }, [rawId, isPremium, onRefresh])
 
   const onJoin = async () => {
     setMsg(null)
@@ -133,6 +175,30 @@ export function EventPage() {
           {msg}
         </div>
       )}
+
+      <div className="hp-section" style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <p className="hp-muted" style={{ margin: 0 }}>
+            {isPremium
+              ? 'Real-time updates are enabled for your premium account.'
+              : 'Real-time updates are available for premium users.'}
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              className={`hp-btn hp-btn--sm ${isPremium ? 'hp-btn--secondary' : 'hp-btn--primary'}`}
+              onClick={() => void onRefresh()}
+            >
+              Refresh
+            </button>
+            {!isPremium && (
+              <button type="button" className="hp-btn hp-btn--secondary hp-btn--sm" disabled>
+                Upgrade
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Join */}
       <div className="hp-section">

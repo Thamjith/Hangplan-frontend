@@ -32,6 +32,23 @@
 - Override API base with `.env`:
   - `VITE_API_BASE=http://localhost:8080`
 
+## Subscription Handling
+- `auth.user.isPremium` mirrors backend `users.is_premium`.
+- Default behavior should treat missing/false values as free tier.
+- Use this flag to decide real-time vs manual refresh behavior.
+
+## Real-time Architecture
+- Backend WebSocket endpoint: `/ws`
+- Topic pattern: `/topic/events/{eventId}`
+- Premium users subscribe and refetch event queries on message.
+- Free users do not subscribe and rely on manual refresh.
+
+## Developer Notes
+- Do not reintroduce polling (`pollingInterval`) for event detail screens.
+- Keep WebSocket connection logic isolated to event-specific UI/service code.
+- Preserve a working manual refresh fallback for non-premium users.
+- Current flag is a stepping stone toward full subscription management.
+
 ## Coding Guidelines for Agents
 - Keep data-fetching in RTK Query (`hangplanApi.ts`), not ad-hoc fetch calls.
 - Keep components focused and presentational where possible.
