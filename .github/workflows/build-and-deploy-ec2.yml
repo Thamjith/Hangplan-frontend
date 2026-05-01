@@ -28,7 +28,8 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_API_BASE: ${{ vars.VITE_API_BASE || '/api' }}
+          VITE_API_BASE: ${{ vars.VITE_API_BASE || 'https://api.hangplan.in' }}
+          VITE_OAUTH_BASE: ${{ vars.VITE_OAUTH_BASE || 'https://api.hangplan.in' }}
         run: npm run build
 
       - name: Upload frontend artifact

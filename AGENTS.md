@@ -29,8 +29,10 @@
 ## Configuration Notes
 - Frontend default URL: `http://localhost:5173`
 - Backend base URL defaults to `http://localhost:8080`
-- Override API base with `.env`:
+- OAuth base defaults to backend base unless explicitly set.
+- Override API/OAuth base with `.env`:
   - `VITE_API_BASE=http://localhost:8080`
+  - `VITE_OAUTH_BASE=http://localhost:8080`
 
 ## Subscription Handling
 - `auth.user.isPremium` mirrors backend `users.is_premium`.

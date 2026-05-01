@@ -3,6 +3,8 @@ import type { AuthUser } from './authSlice'
 
 const baseUrl =
   (import.meta.env.VITE_API_BASE as string | undefined) ?? 'http://localhost:8080'
+const oauthBaseUrl =
+  (import.meta.env.VITE_OAUTH_BASE as string | undefined) ?? baseUrl
 
 export const hangplanApi = createApi({
   reducerPath: 'hangplanApi',
@@ -148,4 +150,4 @@ export const {
   useGetSummaryQuery,
 } = hangplanApi
 
-export { baseUrl as apiBaseUrl }
+export { baseUrl as apiBaseUrl, oauthBaseUrl }

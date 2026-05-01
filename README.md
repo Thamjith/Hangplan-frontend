@@ -23,10 +23,11 @@ The app is served at `http://localhost:5173`.
 
 ## Environment
 
-Create `.env` only if your backend API URL differs from default:
+Create `.env` only if your backend API/OAuth URL differs from defaults:
 
 ```bash
 VITE_API_BASE=http://localhost:8080
+VITE_OAUTH_BASE=http://localhost:8080
 ```
 
 ## Other scripts

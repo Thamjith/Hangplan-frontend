@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation, type Location } from 'react-
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useLoginMutation, useSignupMutation, apiBaseUrl } from '../store/hangplanApi'
+import { useLoginMutation, useSignupMutation, oauthBaseUrl } from '../store/hangplanApi'
 import { setCredentials } from '../store/authSlice'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import '../styles/landing.scss'
@@ -389,7 +389,7 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
     }
   }
 
-  const googleHref = `${apiBaseUrl}/oauth2/authorization/google`
+  const googleHref = `${oauthBaseUrl}/oauth2/authorization/google`
 
   return (
     <section id="auth" className="lp-auth">
