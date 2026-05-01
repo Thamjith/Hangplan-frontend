@@ -316,10 +316,25 @@ export function EventPage() {
       {/* Join */}
       <div className="hp-section">
         <h2 className="hp-section-title">Join</h2>
-        {hasAcceptedMembership ? (
-          <p className="hp-muted">You are already in this event.</p>
-        ) : isCreator ? (
+        {isCreator ? (
           <p className="hp-muted">You created this event — you are already included as a participant.</p>
+        ) : hasAcceptedMembership ? (
+          <>
+            <p className="hp-muted">You are in this event.</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', marginTop: 14 }}>
+              <button
+                type="button"
+                className="hp-btn hp-btn--secondary"
+                onClick={onDecline}
+                disabled={declineState.isLoading}
+              >
+                {declineState.isLoading ? <span className="hp-spinner hp-spinner--dark" /> : 'Pass on this event'}
+              </button>
+            </div>
+            <p className="hp-muted" style={{ marginTop: 12, fontSize: 14 }}>
+              Changed your mind? You can pass and join again later if there is room.
+            </p>
+          </>
         ) : (
           <>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
