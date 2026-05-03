@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useSearchParams, useLocation, type Location } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams, useLocation, type Location } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -100,17 +100,17 @@ function EyeOffIcon({ size = 18 }: { size?: number }) {
 
 function Navbar({ scrolled, onAuthClick }: { scrolled: boolean; onAuthClick: (m: 'login' | 'signup') => void }) {
   return (
-    <nav className={`lp-nav${scrolled ? ' is-scrolled' : ''}`}>
+    <nav className={`lp-nav${scrolled ? ' is-scrolled' : ''}`} aria-label="Primary">
       <div className="lp-nav__inner">
-        <a href="#" className="lp-nav__brand">
+        <Link to="/" className="lp-nav__brand">
           <LogoIcon />
           <span>HangPlan</span>
-        </a>
+        </Link>
         <div className="lp-nav__actions">
-          <button className="lp-btn-ghost" onClick={() => onAuthClick('login')}>
+          <button type="button" className="lp-btn-ghost" onClick={() => onAuthClick('login')}>
             Sign in
           </button>
-          <button className="lp-btn-primary lp-btn-primary--nav" onClick={() => onAuthClick('signup')}>
+          <button type="button" className="lp-btn-primary lp-btn-primary--nav" onClick={() => onAuthClick('signup')}>
             Get Started
           </button>
         </div>
@@ -130,7 +130,7 @@ const PREVIEW_PEOPLE = [
 
 function HeroVisual() {
   return (
-    <div className="lp-event-card">
+    <figure className="lp-event-card" aria-labelledby="hero-preview-caption">
       <div className="lp-event-card__header">
         <div>
           <div className="lp-event-card__title">🏖️ Beach Weekend</div>
@@ -144,6 +144,7 @@ function HeroVisual() {
             <div
               className={`lp-event-card__avatar${p.confirmed ? '' : ' lp-event-card__avatar--pending'}`}
               style={{ background: p.bg }}
+              aria-hidden="true"
             >
               {p.initials}
               {p.confirmed && (
@@ -154,7 +155,10 @@ function HeroVisual() {
                 </span>
               )}
             </div>
-            <span className="lp-event-card__person-name">{p.name}</span>
+            <span className="lp-event-card__person-name">
+              {p.name}
+              <span className="hp-visually-hidden">{p.confirmed ? ', confirmed going' : ', pending RSVP'}</span>
+            </span>
           </div>
         ))}
       </div>
@@ -169,7 +173,11 @@ function HeroVisual() {
           </div>
         </div>
       </div>
-    </div>
+      <figcaption id="hero-preview-caption" className="hp-visually-hidden">
+        Sample event card: Beach Weekend on Saturday June 14 in Malibu, California; three people confirmed going out of four invitees;
+        shared expenses total three hundred forty dollars, eighty-five dollars per person.
+      </figcaption>
+    </figure>
   )
 }
 
@@ -177,25 +185,28 @@ function HeroVisual() {
 
 function Hero({ onAuthClick }: { onAuthClick: (m: 'login' | 'signup') => void }) {
   return (
-    <section className="lp-hero">
+    <section className="lp-hero" aria-labelledby="hero-heading">
       <div
         className="lp-hero__blob"
+        aria-hidden="true"
         style={{ top: -80, right: '8%', width: 520, height: 520, background: 'var(--primary)', opacity: 0.12, filter: 'blur(115px)' }}
       />
       <div
         className="lp-hero__blob"
+        aria-hidden="true"
         style={{ bottom: -60, left: '2%', width: 400, height: 400, background: 'var(--accent)', opacity: 0.14, filter: 'blur(88px)' }}
       />
       <div
         className="lp-hero__blob"
+        aria-hidden="true"
         style={{ top: '40%', right: '35%', width: 280, height: 280, background: 'var(--secondary)', opacity: 0.10, filter: 'blur(62px)' }}
       />
       <div className="lp-hero__content">
         <div className="lp-hero__badge">
-          <span className="lp-hero__badge__dot" />
+          <span className="lp-hero__badge__dot" aria-hidden="true" />
           Social event planning, simplified
         </div>
-        <h1 className="lp-hero__title">
+        <h1 id="hero-heading" className="lp-hero__title">
           Plan moments.<br />
           <span className="highlight">Stay connected.</span>
         </h1>
@@ -203,11 +214,14 @@ function Hero({ onAuthClick }: { onAuthClick: (m: 'login' | 'signup') => void })
           HangPlan makes it effortless to organize events, keep your crew in the loop, and settle up — all in one place.
         </p>
         <div className="lp-hero__ctas">
-          <button className="lp-btn-primary lp-btn-primary--hero" onClick={() => onAuthClick('signup')}>
+          <button type="button" className="lp-btn-primary lp-btn-primary--hero" onClick={() => onAuthClick('signup')}>
             Get Started — it&apos;s free
           </button>
           <a href="#how" className="lp-btn-outline">
-            See how it works <ChevronDownIcon />
+            See how it works{' '}
+            <span aria-hidden="true">
+              <ChevronDownIcon />
+            </span>
           </a>
         </div>
         <HeroVisual />
@@ -251,16 +265,16 @@ const FEATURES = [
 
 function Features() {
   return (
-    <section className="lp-features">
+    <section className="lp-features" aria-labelledby="features-heading">
       <div className="lp-features__container">
         <div className="lp-features__header">
-          <h2 className="lp-section-title">Everything your group needs</h2>
+          <h2 id="features-heading" className="lp-section-title">Everything your group needs</h2>
           <p className="lp-section-desc">Four pillars that turn chaotic group planning into effortless coordination.</p>
         </div>
         <div className="lp-features__grid">
           {FEATURES.map((f) => (
             <div className="lp-feature-card" key={f.title}>
-              <div className="lp-feature-card__icon" style={{ background: f.iconBg, color: f.iconColor }}>
+              <div className="lp-feature-card__icon" style={{ background: f.iconBg, color: f.iconColor }} aria-hidden="true">
                 {f.icon}
               </div>
               <h3 className="lp-feature-card__title">{f.title}</h3>
@@ -295,10 +309,10 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section id="how" className="lp-how">
+    <section id="how" className="lp-how" aria-labelledby="how-heading">
       <div className="lp-how__container">
         <div className="lp-how__header">
-          <h2 className="lp-section-title">Up and running in minutes</h2>
+          <h2 id="how-heading" className="lp-section-title">Up and running in minutes</h2>
           <p className="lp-section-desc" style={{ maxWidth: 420 }}>
             No learning curve. Just open HangPlan and start planning.
           </p>
@@ -392,14 +406,14 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
   const googleHref = `${oauthBaseUrl}/oauth2/authorization/google`
 
   return (
-    <section id="auth" className="lp-auth">
+    <section id="auth" className="lp-auth" aria-labelledby="auth-heading">
       <div className="lp-auth__card">
         <div className="lp-auth__head">
           <div className="lp-auth__head__brand">
             <LogoIcon size={24} />
             <span>HangPlan</span>
           </div>
-          <h2 className="lp-auth__head__title">
+          <h2 id="auth-heading" className="lp-auth__head__title">
             {mode === 'signup' ? 'Create your account' : 'Sign in'}
           </h2>
           <p className="lp-auth__head__sub">
@@ -407,10 +421,10 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
           </p>
         </div>
 
-        <button className="lp-auth__google" type="button" onClick={() => { window.location.href = googleHref }}>
+        <a className="lp-auth__google" href={googleHref}>
           <GoogleIcon />
           Continue with Google
-        </button>
+        </a>
 
         <div className="lp-auth__divider">
           <div className="lp-auth__divider__line" />
@@ -418,7 +432,11 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
           <div className="lp-auth__divider__line" />
         </div>
 
-        {apiError && <div className="lp-auth__error-banner">{apiError}</div>}
+        {apiError && (
+          <div className="lp-auth__error-banner" role="alert">
+            {apiError}
+          </div>
+        )}
 
         {mode === 'signup' ? (
           <form className="lp-auth__form" onSubmit={signupForm.handleSubmit(onSignup)} noValidate>
@@ -462,8 +480,8 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
               </div>
               {signupErrors.password && <p className="lp-auth__field-error">{signupErrors.password.message}</p>}
             </div>
-            <button type="submit" className="lp-auth__submit" disabled={pending}>
-              {pending ? <span className="spinner" /> : 'Create account'}
+            <button type="submit" className="lp-auth__submit" disabled={pending} aria-busy={pending}>
+              {pending ? <span className="spinner" aria-hidden /> : 'Create account'}
             </button>
           </form>
         ) : (
@@ -500,8 +518,8 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
             <div className="lp-auth__forgot">
               <a href="#">Forgot password?</a>
             </div>
-            <button type="submit" className="lp-auth__submit" disabled={pending}>
-              {pending ? <span className="spinner" /> : 'Sign in'}
+            <button type="submit" className="lp-auth__submit" disabled={pending} aria-busy={pending}>
+              {pending ? <span className="spinner" aria-hidden /> : 'Sign in'}
             </button>
           </form>
         )}
@@ -523,15 +541,17 @@ function Footer() {
   return (
     <footer className="lp-footer">
       <div className="lp-footer__brand">
-        <LogoIcon size={22} />
+        <span aria-hidden="true">
+          <LogoIcon size={22} />
+        </span>
         HangPlan
       </div>
       <p className="lp-footer__copy">© 2026 HangPlan. Built for people who love making plans.</p>
-      <div className="lp-footer__links">
+      <nav className="lp-footer__links" aria-label="Footer">
         {['Privacy', 'Terms', 'Contact'].map((l) => (
           <a key={l} href="#">{l}</a>
         ))}
-      </div>
+      </nav>
     </footer>
   )
 }
@@ -580,13 +600,18 @@ export function LandingPage() {
 
   return (
     <>
+      <a href="#main-content" className="hp-skip-link">
+        Skip to main content
+      </a>
       <Navbar scrolled={scrolled} onAuthClick={onAuthClick} />
-      <Hero onAuthClick={onAuthClick} />
-      <Features />
-      <HowItWorks />
-      <div ref={authRef}>
-        <AuthSection initialMode={authMode} />
-      </div>
+      <main id="main-content">
+        <Hero onAuthClick={onAuthClick} />
+        <Features />
+        <HowItWorks />
+        <div ref={authRef}>
+          <AuthSection initialMode={authMode} />
+        </div>
+      </main>
       <Footer />
     </>
   )

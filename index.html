@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-US">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -7,8 +7,17 @@
     <title>HangPlan — Plan moments. Stay connected.</title>
     <meta
       name="description"
-      content="HangPlan makes it effortless to organize events, keep your crew in the loop, and settle up — all in one place."
+      content="HangPlan makes it effortless to organize social events, keep your crew in the loop, and settle up — all in one place. Free event planning with invites and expense splitting."
     />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="HangPlan" />
+    <meta name="application-name" content="HangPlan" />
+    <meta
+      name="keywords"
+      content="HangPlan, social event planning, organize events, group planning, expense splitting, settle up, RSVPs, shared expenses"
+    />
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="canonical" href="https://hangplan.in/" />
 
     <!-- Open Graph / Facebook & LinkedIn -->
     <meta property="og:type" content="website" />
@@ -19,11 +28,17 @@
       property="og:description"
       content="HangPlan makes it effortless to organize events, keep your crew in the loop, and settle up — all in one place."
     />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:image" content="https://hangplan.in/og-image.png" />
+    <meta property="og:image:url" content="https://hangplan.in/og-image.png" />
+    <meta property="og:image:secure_url" content="https://hangplan.in/og-image.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1024" />
-    <meta property="og:image:height" content="641" />
-    <meta property="og:image:alt" content="HangPlan landing page — social event planning with invites and expense splitting." />
+    <meta property="og:image:height" content="642" />
+    <meta
+      property="og:image:alt"
+      content="HangPlan landing page preview: hero headline, Beach Weekend sample event with attendee avatars and RSVP counts, and expenses split summary."
+    />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -33,6 +48,46 @@
       content="HangPlan makes it effortless to organize events, keep your crew in the loop, and settle up — all in one place."
     />
     <meta name="twitter:image" content="https://hangplan.in/og-image.png" />
+    <meta
+      name="twitter:image:alt"
+      content="HangPlan landing page preview: hero headline, Beach Weekend sample event with attendee avatars and RSVP counts, and expenses split summary."
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://hangplan.in/#website",
+            "url": "https://hangplan.in/",
+            "name": "HangPlan",
+            "description": "HangPlan makes it effortless to organize events, keep your crew in the loop, and settle up — all in one place.",
+            "inLanguage": "en-US",
+            "publisher": { "@id": "https://hangplan.in/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://hangplan.in/#organization",
+            "name": "HangPlan",
+            "url": "https://hangplan.in/"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "HangPlan",
+            "applicationCategory": "LifestyleApplication",
+            "operatingSystem": "Web",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "description": "Social event planning with invites, RSVPs, and shared expense splitting."
+          }
+        ]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
     <link
