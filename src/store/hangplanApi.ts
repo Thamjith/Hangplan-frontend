@@ -72,6 +72,14 @@ export const hangplanApi = createApi({
       query: (id) => ({ url: `/events/${id}/join`, method: 'POST' }),
       invalidatesTags: (_r, _e, id) => [{ type: 'Event', id }, 'MyEvents'],
     }),
+    closeEvent: build.mutation<void, string>({
+      query: (id) => ({ url: `/events/${id}/close`, method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => [{ type: 'Event', id }, 'MyEvents'],
+    }),
+    openEvent: build.mutation<void, string>({
+      query: (id) => ({ url: `/events/${id}/open`, method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => [{ type: 'Event', id }, 'MyEvents'],
+    }),
     addExpense: build.mutation<
       void,
       { id: string; body: { amount: number; description?: string } }
@@ -159,6 +167,8 @@ export const {
   useDeclineEventMutation,
   useGetEventQuery,
   useJoinEventMutation,
+  useCloseEventMutation,
+  useOpenEventMutation,
   useAddExpenseMutation,
   useGetExpensesQuery,
   useGetSummaryQuery,

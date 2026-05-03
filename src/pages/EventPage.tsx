@@ -11,11 +11,18 @@ import {
   useGetExpensesQuery,
   useGetSummaryQuery,
   useJoinEventMutation,
+  useCloseEventMutation,
+  useOpenEventMutation,
   useAddExpenseMutation,
   useDeclineEventMutation,
 } from '../store/hangplanApi'
 import { useAppSelector } from '../store/hooks'
 import { isPaidUser } from '../subscription'
+import {
+  computePairwiseSettlementFlows,
+  formatSettlementAmount,
+  mergeAmountsByName,
+} from '../lib/splitSettlement'
 
 const expenseSchema = z.object({
   amount: z
@@ -49,6 +56,8 @@ export function EventPage() {
   const { data: expenses = [], refetch: refetchExpenses } = useGetExpensesQuery(rawId, { skip: !rawId })
   const { data: summary, refetch: refetchSummary } = useGetSummaryQuery(rawId, { skip: !rawId })
   const [join, joinState] = useJoinEventMutation()
+  const [closeEvent, closeEventState] = useCloseEventMutation()
+  const [openEvent, openEventState] = useOpenEventMutation()
   const [decline, declineState] = useDeclineEventMutation()
   const [addEx, exState] = useAddExpenseMutation()
   const [msg, setMsg] = useState<string | null>(null)
@@ -73,6 +82,34 @@ export function EventPage() {
   const isCreator = !!(me && ev && ev.createdById === me.id)
 
   const isClosed = ev?.status === 'CLOSED'
+
+  const { acceptedCount, isFull } = useMemo(() => {
+    if (!ev) return { acceptedCount: 0, isFull: false }
+    const n = ev.participants.filter((p) => p.status === 'ACCEPTED').length
+    return { acceptedCount: n, isFull: n >= ev.maxParticipants }
+  }, [ev])
+
+  const settlementFlows = useMemo(() => {
+    if (!summary?.balances?.length) return []
+    return computePairwiseSettlementFlows(summary.balances)
+  }, [summary])
+
+  const mySettleUp = useMemo(() => {
+    if (!me) {
+      return { pay: [] as { name: string; cents: number }[], receive: [] as { name: string; cents: number }[] }
+    }
+    const pay: { name: string; cents: number }[] = []
+    const receive: { name: string; cents: number }[] = []
+    for (const f of settlementFlows) {
+      if (f.fromUserId === me.id) {
+        pay.push({ name: f.toName, cents: f.amountCents })
+      }
+      if (f.toUserId === me.id) {
+        receive.push({ name: f.fromName, cents: f.amountCents })
+      }
+    }
+    return { pay: mergeAmountsByName(pay), receive: mergeAmountsByName(receive) }
+  }, [me, settlementFlows])
 
   useEffect(() => {
     setCopyLinkFeedback('idle')
@@ -177,7 +214,25 @@ export function EventPage() {
     try {
       await join(rawId).unwrap()
     } catch {
-      setMsg('Could not join. The event may be full or closed.')
+      setMsg('Could not join. The event may be full, not available for new joins, or you may already be in.')
+    }
+  }
+
+  const onCloseEvent = async () => {
+    setMsg(null)
+    try {
+      await closeEvent(rawId).unwrap()
+    } catch {
+      setMsg('Could not mark the event unavailable. Try again.')
+    }
+  }
+
+  const onOpenEvent = async () => {
+    setMsg(null)
+    try {
+      await openEvent(rawId).unwrap()
+    } catch {
+      setMsg('Could not mark the event available. Try again.')
     }
   }
 
@@ -196,7 +251,7 @@ export function EventPage() {
       await addEx({ id: rawId, body: { amount: data.amount, description: data.description || '' } }).unwrap()
       form.reset({ amount: '', description: '' })
     } catch {
-      setMsg('Could not add expense. Join the event first.')
+      setMsg('Could not add expense. Join the event first, or the organizer may have marked it unavailable.')
     }
   }
 
@@ -229,12 +284,36 @@ export function EventPage() {
 
       <h1 className="hp-page-title" style={{ marginBottom: 8 }}>{ev.title}</h1>
       <p className="hp-muted" style={{ marginBottom: 4 }}>
-        Max {ev.maxParticipants} people ·{' '}
+        Max {ev.maxParticipants} people ({acceptedCount} accepted) ·{' '}
         <span className={`hp-badge ${isClosed ? 'hp-badge--muted' : 'hp-badge--success'}`} style={{ verticalAlign: 'middle' }}>
-          {isClosed ? 'Closed' : 'Open'}
+          {isClosed ? 'Unavailable' : 'Available'}
         </span>{' '}
         · Created by {ev.createdByName}
       </p>
+      {isCreator && (
+        <p className="hp-muted" style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <span>Availability controls whether people can join and add expenses.</span>
+          {isClosed ? (
+            <button
+              type="button"
+              className="hp-btn hp-btn--secondary hp-btn--sm"
+              onClick={() => void onOpenEvent()}
+              disabled={openEventState.isLoading}
+            >
+              {openEventState.isLoading ? <span className="hp-spinner hp-spinner--dark" /> : 'Mark available'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="hp-btn hp-btn--secondary hp-btn--sm"
+              onClick={() => void onCloseEvent()}
+              disabled={closeEventState.isLoading}
+            >
+              {closeEventState.isLoading ? <span className="hp-spinner hp-spinner--dark" /> : 'Mark unavailable'}
+            </button>
+          )}
+        </p>
+      )}
       <div
         className="hp-muted"
         style={{
@@ -341,11 +420,19 @@ export function EventPage() {
               <button
                 className="hp-btn hp-btn--primary"
                 onClick={onJoin}
-                disabled={isClosed || joinState.isLoading}
+                disabled={isClosed || isFull || joinState.isLoading}
               >
-                {joinState.isLoading ? <span className="hp-spinner" /> : isClosed ? 'Event closed' : 'Join event'}
+                {joinState.isLoading ? (
+                  <span className="hp-spinner" />
+                ) : isClosed ? (
+                  'Event unavailable'
+                ) : isFull ? (
+                  'Event full'
+                ) : (
+                  'Join event'
+                )}
               </button>
-              {!isClosed && myParticipant?.status !== 'DECLINED' && (
+              {!isClosed && !isFull && myParticipant?.status !== 'DECLINED' && (
                 <button
                   type="button"
                   className="hp-btn hp-btn--secondary"
@@ -506,6 +593,69 @@ export function EventPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            {summary.balances.length > 0 && (
+              <div className="hp-settle-up">
+                <h3 className="hp-settle-up__title">Your settle-up</h3>
+                {!me && (
+                  <p className="hp-muted" style={{ margin: 0 }}>
+                    Loading your account…
+                  </p>
+                )}
+                {me && !hasAcceptedMembership && (
+                  <p className="hp-muted" style={{ margin: 0 }}>
+                    Join this event as a participant to see who you should pay or who should pay you.
+                  </p>
+                )}
+                {me && hasAcceptedMembership && (
+                  <>
+                    {mySettleUp.pay.length === 0 && mySettleUp.receive.length === 0 && (
+                      <p className="hp-muted" style={{ margin: 0 }}>
+                        {"You're even with everyone in this split—no payments needed from you."}
+                      </p>
+                    )}
+                    {mySettleUp.pay.length > 0 && (
+                      <div className="hp-settle-up__block hp-settle-up__block--pay">
+                        <p className="hp-settle-up__label">What you pay each person</p>
+                        <p className="hp-settle-up__secondary">
+                          Send each person their amount so your share is settled.
+                        </p>
+                        <ul className="hp-settle-up__list">
+                          {mySettleUp.pay.map((row) => (
+                            <li key={`pay-${row.name}`}>
+                              <span>
+                                Pay <strong>{row.name}</strong>
+                              </span>
+                              <span className="hp-settle-up__amt">{formatSettlementAmount(row.cents)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {mySettleUp.receive.length > 0 && (
+                      <div className="hp-settle-up__block hp-settle-up__block--receive">
+                        <p className="hp-settle-up__label">Who pays you</p>
+                        <p className="hp-settle-up__secondary">
+                          <strong>{mySettleUp.receive.length}</strong>{' '}
+                          {mySettleUp.receive.length === 1 ? 'person should pay' : 'people should pay'}{' '}
+                          you—amounts below are what each one sends you.
+                        </p>
+                        <ul className="hp-settle-up__list">
+                          {mySettleUp.receive.map((row) => (
+                            <li key={`recv-${row.name}`}>
+                              <span>
+                                <strong>{row.name}</strong>
+                                <span className="hp-settle-up__sub"> pays you</span>
+                              </span>
+                              <span className="hp-settle-up__amt">{formatSettlementAmount(row.cents)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>

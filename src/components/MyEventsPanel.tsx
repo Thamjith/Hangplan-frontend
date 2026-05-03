@@ -24,7 +24,7 @@ function EventRow({ item }: { item: MyEventSummary }) {
   }
   parts.push(
     <span key="st" className={`hp-badge ${closed ? 'hp-badge--muted' : 'hp-badge--success'}`}>
-      {closed ? 'Closed' : 'Open'}
+      {closed ? 'Unavailable' : 'Available'}
     </span>,
   )
 
