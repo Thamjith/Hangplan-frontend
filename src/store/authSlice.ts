@@ -10,6 +10,10 @@ export type AuthUser = {
   /** Backend plan name, e.g. FREE, PAID_1Y */
   subscriptionPlan: string
   subscriptionEnd: string | null
+  /** E.164 when set */
+  phoneE164?: string | null
+  latitude?: number | null
+  longitude?: number | null
 }
 
 type AuthState = {

@@ -1,6 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { AuthUser } from './authSlice'
 
+export type UpdateProfileRequest = {
+  name: string
+  /** Omit to leave phone unchanged; empty string clears */
+  phoneE164?: string | null
+  locationUpdate?: 'SET' | 'CLEAR'
+  latitude?: number | null
+  longitude?: number | null
+}
+
 const baseUrl =
   (import.meta.env.VITE_API_BASE as string | undefined) ?? 'http://localhost:8080'
 const oauthBaseUrl =
@@ -35,6 +44,10 @@ export const hangplanApi = createApi({
     getMe: build.query<AuthUser, void>({
       query: () => '/auth/me',
       providesTags: ['User'],
+    }),
+    updateMe: build.mutation<AuthUser, UpdateProfileRequest>({
+      query: (body) => ({ url: '/auth/me', method: 'PATCH', body }),
+      invalidatesTags: ['User'],
     }),
     createEvent: build.mutation<
       EventOut,
@@ -140,6 +153,7 @@ export const {
   useSignupMutation,
   useLoginMutation,
   useGetMeQuery,
+  useUpdateMeMutation,
   useCreateEventMutation,
   useGetMyEventsQuery,
   useDeclineEventMutation,

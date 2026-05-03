@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useLoginMutation, useSignupMutation, oauthBaseUrl } from '../store/hangplanApi'
 import { setCredentials } from '../store/authSlice'
+import { PENDING_LOCATION_SYNC_KEY, syncDeviceLocationAfterSignIn } from '../lib/syncDeviceLocationAfterSignIn'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import '../styles/landing.scss'
 
@@ -381,6 +382,7 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
     try {
       const res = await login(data).unwrap()
       dispatch(setCredentials({ token: res.token, user: res.user }))
+      syncDeviceLocationAfterSignIn(res.user)
       navigate(from ?? '/app', { replace: true })
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
@@ -397,6 +399,7 @@ function AuthSection({ initialMode }: { initialMode: 'login' | 'signup' }) {
     try {
       const res = await signup({ name: data.fullName, email: data.email, password: data.password }).unwrap()
       dispatch(setCredentials({ token: res.token, user: res.user }))
+      syncDeviceLocationAfterSignIn(res.user)
       navigate(from ?? '/app', { replace: true })
     } catch {
       setApiError('Could not create account. Email may already be in use.')
@@ -548,9 +551,9 @@ function Footer() {
       </div>
       <p className="lp-footer__copy">© 2026 HangPlan. Built for people who love making plans.</p>
       <nav className="lp-footer__links" aria-label="Footer">
-        {['Privacy', 'Terms', 'Contact'].map((l) => (
-          <a key={l} href="#">{l}</a>
-        ))}
+        <Link to="/privacy">Privacy</Link>
+        <Link to="/terms">Terms</Link>
+        <Link to="/contact">Contact</Link>
       </nav>
     </footer>
   )
@@ -578,6 +581,7 @@ export function LandingPage() {
     const oauthToken = search.get('token')
     if (oauthToken) {
       dispatch(setCredentials({ token: oauthToken }))
+      sessionStorage.setItem(PENDING_LOCATION_SYNC_KEY, '1')
       setSearch({})
     }
   }, [search, setSearch, dispatch])

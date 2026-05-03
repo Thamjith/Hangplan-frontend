@@ -1,8 +1,8 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { clearAuth } from '../store/authSlice'
 import { hangplanApi } from '../store/hangplanApi'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Props = { children: React.ReactNode }
 
@@ -22,16 +22,45 @@ function LogoIcon({ size = 24 }: { size?: number }) {
   )
 }
 
+function ChevronDownIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
 export function AppLayout({ children }: Props) {
   const user = useAppSelector((s) => s.auth.user)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const onLogout = useCallback(() => {
+    setMenuOpen(false)
     dispatch(clearAuth())
     dispatch(hangplanApi.util.resetApiState())
     navigate('/', { replace: true })
   }, [dispatch, navigate])
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDoc = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [menuOpen])
+
+  const initial = user?.name?.trim()?.charAt(0)?.toUpperCase() ?? '?'
 
   return (
     <div className="app-layout">
@@ -42,11 +71,32 @@ export function AppLayout({ children }: Props) {
             HangPlan
           </Link>
           {user && (
-            <div className="app-header__user">
-              <span className="app-header__user-name">Signed in as {user.name}</span>
-              <button className="hp-btn hp-btn--secondary hp-btn--sm" onClick={onLogout}>
-                Log out
-              </button>
+            <div className="app-header__user" ref={menuRef}>
+              <div className="hp-profile-menu">
+                <button
+                  type="button"
+                  className="hp-profile-menu__trigger"
+                  onClick={() => setMenuOpen((o) => !o)}
+                  aria-expanded={menuOpen}
+                  aria-haspopup="true"
+                >
+                  <span className="hp-profile-menu__avatar" aria-hidden="true">
+                    {initial}
+                  </span>
+                  <span className="hp-profile-menu__name">{user.name}</span>
+                  <ChevronDownIcon />
+                </button>
+                {menuOpen && (
+                  <div className="hp-profile-menu__dropdown" role="menu">
+                    <Link to="/app/profile" className="hp-profile-menu__item" role="menuitem" onClick={() => setMenuOpen(false)}>
+                      Profile
+                    </Link>
+                    <button type="button" className="hp-profile-menu__item" role="menuitem" onClick={onLogout}>
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
